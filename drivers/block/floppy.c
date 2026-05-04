@@ -893,8 +893,8 @@ static int lock_fdc(int drive)
 
 	WRITE_ONCE(command_status, FD_COMMAND_NONE);
 
-	reschedule_timeout(drive, "lock fdc");
 	set_fdc(drive);
+	reschedule_timeout(drive, "lock fdc");
 	return 0;
 }
 
@@ -2878,8 +2878,8 @@ static blk_status_t floppy_queue_rq(struct blk_mq_hw_ctx *hctx,
 	spin_unlock_irq(&floppy_lock);
 
 	WRITE_ONCE(command_status, FD_COMMAND_NONE);
-	__reschedule_timeout(MAXTIMEOUT, "fd_request");
 	set_fdc(0);
+	__reschedule_timeout(MAXTIMEOUT, "fd_request");
 	process_fd_request();
 	is_alive(__func__, "");
 	return BLK_STS_OK;
