@@ -2880,7 +2880,7 @@ static blk_status_t floppy_queue_rq(struct blk_mq_hw_ctx *hctx,
 
 	WRITE_ONCE(command_status, FD_COMMAND_NONE);
 	set_fdc(0);
-	__reschedule_timeout(MAXTIMEOUT, "fd_request");
+	reschedule_timeout(MAXTIMEOUT, "fd_request");
 	process_fd_request();
 	is_alive(__func__, "");
 	return BLK_STS_OK;
