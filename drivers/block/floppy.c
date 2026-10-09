@@ -634,15 +634,6 @@ static inline void debugt(const char *func, const char *msg) { }
 static DECLARE_DELAYED_WORK(fd_timeout, floppy_shutdown);
 static const char *timeout_message;
 
-static void is_alive(const char *func, const char *message)
-{
-	/* this routine checks whether the floppy driver is "alive" */
-	if (test_bit(0, &fdc_busy) && READ_ONCE(command_status) < 2 &&
-	    !delayed_work_pending(&fd_timeout)) {
-		DPRINT("%s: timeout handler died.  %s\n", func, message);
-	}
-}
-
 static void (*do_floppy)(void) = NULL;
 
 #define OLOGSIZE 20
@@ -1724,7 +1715,6 @@ irqreturn_t floppy_interrupt(int irq, void *dev_id)
 		pr_info("DOR0=%x\n", fdc_state[0].dor);
 		pr_info("floppy interrupt on bizarre fdc %d\n", current_fdc);
 		pr_info("handler=%ps\n", handler);
-		is_alive(__func__, "bizarre fdc");
 		return IRQ_NONE;
 	}
 
@@ -1759,7 +1749,6 @@ irqreturn_t floppy_interrupt(int irq, void *dev_id)
 		return IRQ_NONE;
 	}
 	schedule_bh(handler);
-	is_alive(__func__, "normal interrupt end");
 
 	/* FIXME! Was it really for us? */
 	return IRQ_HANDLED;
@@ -1891,7 +1880,6 @@ static void floppy_shutdown(struct work_struct *arg)
 		pr_info("no cont in shutdown!\n");
 		process_fd_request();
 	}
-	is_alive(__func__, "");
 }
 
 /* start motor, check media-changed condition and write protection */
@@ -2858,7 +2846,6 @@ static blk_status_t floppy_queue_rq(struct blk_mq_hw_ctx *hctx,
 	if (test_and_set_bit(0, &fdc_busy)) {
 		/* fdc busy, this new request will be treated when the
 		   current one is done */
-		is_alive(__func__, "old request running");
 		return BLK_STS_RESOURCE;
 	}
 
@@ -2870,7 +2857,6 @@ static blk_status_t floppy_queue_rq(struct blk_mq_hw_ctx *hctx,
 	set_fdc(0);
 	reschedule_timeout(MAXTIMEOUT, "fd_request");
 	process_fd_request();
-	is_alive(__func__, "");
 	return BLK_STS_OK;
 }
 
