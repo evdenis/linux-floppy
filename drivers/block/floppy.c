@@ -1830,13 +1830,14 @@ static void reset_fdc(void)
 
 static void show_floppy(int fdc)
 {
+	unsigned long j = jiffies;
 	int i;
 
 	pr_info("\n");
 	pr_info("floppy driver state\n");
 	pr_info("-------------------\n");
 	pr_info("now=%lu last interrupt=%lu diff=%lu last called handler=%ps\n",
-		jiffies, interruptjiffies, jiffies - interruptjiffies,
+		j, interruptjiffies, j - interruptjiffies,
 		lasthandler);
 
 	pr_info("timeout_message=%s\n", timeout_message);
